@@ -7,6 +7,7 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <router-view name="postIndex"></router-view>
+                    <router-view></router-view>
                 </div>
             </div>
         </div>

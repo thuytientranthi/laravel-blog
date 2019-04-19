@@ -1808,16 +1808,21 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       post: {
         title: '',
         content: '',
-        description: '',
-        image: ''
+        description: ''
       }
     };
+  },
+  methods: {
+    previewFiles: function previewFiles(event) {
+      console.log(event.target.files);
+    }
   } // methods: {
   //     saveForm() {
   //         event.preventDefault();
@@ -37298,26 +37303,15 @@ var render = function() {
         _vm._v(" "),
         _c("div", { staticClass: "row" }, [
           _c("div", { staticClass: "col-xs-12 form-group" }, [
-            _c("label", { staticClass: "control-label" }, [_vm._v("image")]),
+            _c("label", { staticClass: "control-label" }, [_vm._v("Image")]),
             _vm._v(" "),
             _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.post.image,
-                  expression: "post.image"
-                }
-              ],
-              staticClass: "form-control",
-              attrs: { type: "text" },
-              domProps: { value: _vm.post.image },
+              ref: "post.image",
+              staticClass: "form-control-file",
+              attrs: { type: "file", id: "file" },
               on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.post, "image", $event.target.value)
+                change: function($event) {
+                  return _vm.handleFileUpload()
                 }
               }
             })
@@ -52290,7 +52284,7 @@ window.Vue.use(vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]);
 
 
 var routes = [{
-  path: '',
+  path: '/',
   name: 'post.index',
   components: {
     postIndex: _components_posts_PostIndex_vue__WEBPACK_IMPORTED_MODULE_2__["default"]

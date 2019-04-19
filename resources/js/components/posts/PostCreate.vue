@@ -28,8 +28,9 @@
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
-                            <label class="control-label">image</label>
-                            <input type="text" v-model="post.image" class="form-control">
+                            <label class="control-label">Image</label>
+                            <input type="file" id="file" ref="post.image" v-on:change="handleFileUpload()" class="form-control-file"/>
+                                <!-- <button v-on:click="submitFile()">Submit</button> -->
                         </div>
                     </div>
                     <div class="row">
@@ -51,10 +52,14 @@
                     title: '',
                     content: '',
                     description: '',
-                    image: '',
                 }
             }
         },
+        methods: {
+            previewFiles(event) {
+                console.log(event.target.files);
+            }
+        }
         // methods: {
         //     saveForm() {
         //         event.preventDefault();

@@ -19,7 +19,7 @@ import PostCreate from './components/posts/PostCreate.vue';
 
 const routes =  [
     {
-        path: '',
+        path: '/',
         name: 'post.index',
         components: {
             postIndex : PostIndex,
