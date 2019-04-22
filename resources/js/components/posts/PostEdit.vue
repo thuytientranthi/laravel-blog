@@ -5,7 +5,7 @@
         </div>
 
         <div class="panel panel-default">
-            <div class="panel-heading" style="font-size : 30px; text-align : center">Create new post</div>
+            <div class="panel-heading" style="font-size : 30px; text-align : center">Edit post</div>
             <div class="panel-body">
                 <form v-on:submit="saveForm()">
                     <div class="row">
@@ -46,42 +46,45 @@
 
 <script>
     export default {
-        data: function () {
+        mounted() {
+            let app = this;
+            let id = app.$route.params.id;
+            app.postId = id;
+            axios.get('/api/posts/' + id)
+            .then(function (resp) {
+                console.log(resp);
+                app.post = resp.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+                alert("Could not load your post")
+            });
+        },
+        data : function() {
             return {
+                postId: null,
                 post: {
                     title: '',
                     content: '',
                     description: '',
+                    image: '',
                 }
             }
         },
         methods: {
             saveForm() {
-                let formData = new FormData();
-                formData.append('file', this.file);
                 event.preventDefault();
                 var app = this;
                 var newPost = app.post;
-                axios.post('/api/posts/', newPost, formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                .then(function (resp) {
+                axios.patch('/api/posts/' + app.postId, newPost)
+                .then(function(resp){
                     console.log(resp);
-                    app.$router.push({path: '/'});   
+                    app.$router.replace('/');
                 })
-                .catch(function (error) {
-                    if (error.response.status == 400){
-                        this.validationErrors = error.response.data.errors;
-                    }
+                .catch(function(error){
                     console.log(error);
-                    alert("Could not create your post");
-                });
-            },
-            handleFileUpload() {
-                // this.file = this.$refs.file.files[0];
+                    alert("could not save post");
+                })
             }
         }
     }

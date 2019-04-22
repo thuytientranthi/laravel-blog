@@ -16,20 +16,26 @@ import Vue from 'vue';
 
 import PostIndex from './components/posts/PostIndex.vue';
 import PostCreate from './components/posts/PostCreate.vue';
+import PostEdit from './components/posts/PostEdit.vue';
 
 const routes =  [
     {
-        path: '/',
-        name: 'post.index',
+        path : '/',
+        name : 'post.index',
         components: {
             postIndex : PostIndex,
         }
     },
     {
-        path: '/create',
-        name: 'createPost',
+        path : '/create',
+        name : 'createPost',
         component : PostCreate,
     },
+    {
+        path : '/edit',
+        name : 'editPost',
+        component: PostEdit,
+    }
 ]
 
 const router = new VueRouter({ routes })
