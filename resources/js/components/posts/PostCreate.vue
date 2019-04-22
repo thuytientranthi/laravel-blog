@@ -7,7 +7,7 @@
         <div class="panel panel-default">
             <div class="panel-heading" style="font-size : 30px; text-align : center">Create new post</div>
             <div class="panel-body">
-                <form v-on:submit="saveForm()">
+                <form enctype="multipart/form-data" v-on:submit="saveForm()">
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">Title</label>
@@ -27,10 +27,12 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-12 form-group">
-                            <label class="control-label">Image</label>
-                            <input type="file" id="file" ref="post.image" v-on:change="handleFileUpload()" class="form-control-file"/>
-                                <!-- <button v-on:click="submitFile()">Submit</button> -->
+                        <!-- <ImageUpload></ImageUpload> -->
+                        <div class="col-md-3" v-if="post.image">
+                            <img :src="image" class="img-responsive" height="70" width="90">
+                        </div>
+                        <div class="col-md-12">
+                            <input type="file" v-on:change="onImageChange" class="form-control">
                         </div>
                     </div>
                     <div class="row">
@@ -45,31 +47,52 @@
 </template>
 
 <script>
+    import ImageUpload from '../files/Imageupload.vue'
     export default {
-        data: function () {
+        // components :{ImageUpload :ImageUpload},
+         data() {
             return {
                 post: {
                     title: '',
                     content: '',
                     description: '',
+                    image: ''
                 }
-            }
+            };
         },
         methods: {
+            onImageChange(e) {
+                let files = e.target.files || e.dataTransfer.files;
+                if (!files.length)
+                    return;
+                this.createImage(files[0]);
+            },
+            createImage(file) {
+                let reader = new FileReader();
+                let vm = this;
+                reader.onload = (e) => {
+                    vm.image = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            // uploadImage(){
+            //     axios.post('/image/store',{image: this.image}).then(response => {
+            //        console.log(response);
+            //     });
+            // }
             saveForm() {
-                let formData = new FormData();
-                formData.append('file', this.file);
                 event.preventDefault();
                 var app = this;
                 var newPost = app.post;
-                axios.post('/api/posts/', newPost, formData,
+                newPost.image = this.image;
+
+                axios.post('/api/posts/', newPost, {image: this.image},
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 })
                 .then(function (resp) {
-                    console.log(resp);
                     app.$router.push({path: '/'});   
                 })
                 .catch(function (error) {
@@ -80,9 +103,6 @@
                     alert("Could not create your post");
                 });
             },
-            handleFileUpload() {
-                // this.file = this.$refs.file.files[0];
-            }
         }
     }
 </script>

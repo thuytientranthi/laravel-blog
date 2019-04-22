@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Post;
 use Validator;
+use Carbon\Carbon;
 
 class PostController extends Controller
 {
@@ -38,7 +39,6 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        return $request->file;
         $validator = Validator::make($request->all(),[
             'title' => 'required',
             'content' => 'required',
@@ -57,22 +57,23 @@ class PostController extends Controller
             ]);
         }
         try {
-            if($request->get('image'))
-            {
-                $image = $request->get('image');
-                $name = time().'.' . explode('/', explode(':', substr($image, 0, strpos($image, ';')))[1])[1];
-                \Image::make($request->get('image'))->save(public_path('images/').$name);
-            }
+            $image = $request->get('image');
+
+            $fileName = Carbon::now()->timestamp . '_' . uniqid() . '.' . explode('/', explode(':', substr($image, 0, strpos($image, ';')))[1])[1];
+
+            // Image::make($request->get('image'))->save(public_path('images/') . $fileName);
+
             $post = New Post;
             $post->title        = $request->title;
             $post->slug         = str_slug($request->title);
             $post->content      = $request->content;
             $post->description  = $request->description;
-            $post->image        = $name;
+            $post->image        = $fileName;
             $post->save();
             return $post;
         } catch (\Exception $e) {
-            return $e;
+            // return $e;
+            dd($e);
         }
     }
 

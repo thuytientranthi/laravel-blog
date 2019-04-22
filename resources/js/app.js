@@ -29,7 +29,8 @@ const routes =  [
     {
         path : '/create',
         name : 'createPost',
-        component : PostCreate,
+        component : PostCreate
+        
     },
     {
         path : '/edit',
