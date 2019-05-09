@@ -11,26 +11,31 @@
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">Title</label>
-                            <input type="text" v-model="post.title" class="form-control">
+                            <input type="text" v-validate="'required'" v-model="post.title" name="title" class="form-control">
+                            <span class="text-danger" v-if="errors.has('title')">{{errors.first('title')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">content</label>
-                            <input type="text" v-model="post.content" class="form-control">
+                            <input type="text" name="content" v-validate="'required'" v-model="post.content" class="form-control">
+                            <span class="text-danger" v-if="errors.has('content')">{{errors.first('content')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">description</label>
-                            <input type="text" v-model="post.description" class="form-control">
+                            <input type="text" name="description" v-validate="'required'" v-model="post.description" class="form-control">
+                            <span class="text-danger" v-if="errors.has('descriptions')">{{errors.first('description')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
-                            <label class="control-label">Image</label>
-                            <input type="file" id="file" ref="post.image" v-on:change="handleFileUpload()" class="form-control-file"/>
-                                <!-- <button v-on:click="submitFile()">Submit</button> -->
+                            <div class="col-md-3" v-if="post.image">
+                                <img :src="image" class="img-responsive" height="70" width="90">
+                            </div>
+                            <input type="file" v-validate="'required|image|size:100'" v-on:change="onImageChange" class="form-control" name="image" style="height: 30px;">
+                            <span class="text-danger" v-if="errors.first('image')">{{errors.first('image')}}</span>
                         </div>
                     </div>
                     <div class="row">
@@ -45,6 +50,9 @@
 </template>
 
 <script>
+    import Vue from 'vue';
+    import VeeValidate from 'vee-validate';
+    Vue.use(VeeValidate)
     export default {
         mounted() {
             let app = this;
@@ -72,8 +80,25 @@
             }
         },
         methods: {
+            onImageChange(e) {
+                let files = e.target.files || e.dataTransfer.files;
+                if (!files.length)
+                    return;
+                this.createImage(files[0]);
+            },
+
+            createImage(file) {
+                let reader = new FileReader();
+                let vm = this;
+                reader.onload = (e) => {
+                    vm.image = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            
             saveForm() {
                 event.preventDefault();
+                this.$validator.validateAll();
                 var app = this;
                 var newPost = app.post;
                 axios.patch('/api/posts/' + app.postId, newPost)

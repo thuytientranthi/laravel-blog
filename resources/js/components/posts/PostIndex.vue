@@ -21,11 +21,12 @@
                     </thead>
                     <tbody>
                     <tr v-for="post, index in posts">
-                        <td>{{ ++index }}</td>
+                        <td>{{ index+1 }}</td>
                         <td>{{ post.title }}</td>
                         <td>{{ post.content }}</td>
                         <td>{{ post.description }}</td>
-                        <td>{{ post.image == null ? 'not set' :  post.image}}</td>
+                        <td v-if="post.image"><img v-bind:src = pathImage(post.image) class="avatar" alt="avatar"></td>
+                        <td v-else="post.image">Not set</td>
                         <td>
                             <router-link :to="{name: 'editPost', params: {id: post.id}}" class="btn btn-xs btn-warning"> Edit </router-link>
                             <a href="#" class="btn btn-danger" v-on:click="deletePost(post.id, index)">Delete</a>
@@ -71,8 +72,25 @@ export default {
                     alert('could not delete');
                 })
             }
+        },
+        pathImage(filename) { 
+            var image = new Image();
+            var url_image = '/images/' + filename;
+            image.src = url_image;
+            return image.src;
         }
     },
 }
 </script>
+<style>
+.avatar {
+    vertical-align: middle;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+table td, table th {
+   text-align: center;   
+}
+</style>
 

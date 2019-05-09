@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Post;
 use Validator;
 use Carbon\Carbon;
+use Image;
 
 class PostController extends Controller
 {
@@ -43,7 +44,7 @@ class PostController extends Controller
             'title' => 'required',
             'content' => 'required',
             'description' => 'required',
-            // 'image' => 'required|mimes:jpeg,jpg,png',
+            'image' => 'required|mimes:jpeg,jpg,png',
         ]);
         if($validator->fails()){
             return response()->json([
@@ -51,29 +52,41 @@ class PostController extends Controller
                     $validator->errors()->first('title'),
                     $validator->errors()->first('content'),
                     $validator->errors()->first('description'),
-                    // $validator->errors()->first('image'),
+                    $validator->errors()->first('image'),
                 ],
                 'status' => 400
             ]);
         }
         try {
-            $image = $request->get('image');
-
-            $fileName = Carbon::now()->timestamp . '_' . uniqid() . '.' . explode('/', explode(':', substr($image, 0, strpos($image, ';')))[1])[1];
-
-            // Image::make($request->get('image'))->save(public_path('images/') . $fileName);
-
+            $title = Post::where('title', $request->title)->first();
+            if ( !empty($title)) {
+                return response()->json([
+                    'message' => "Name exists",
+                    'status' => 401
+                ]);
+            }
+            if(isset($request->image)){
+                $image = $request->image;
+                $fileName = Carbon::now()->timestamp . '_' . uniqid() . '.' . explode('/', explode(':', substr($image, 0, strpos($image, ';')))[1])[1];
+                Image::make($request->get('image'))->save(public_path('images/') . $fileName);
+            }
             $post = New Post;
             $post->title        = $request->title;
             $post->slug         = str_slug($request->title);
             $post->content      = $request->content;
             $post->description  = $request->description;
-            $post->image        = $fileName;
+            isset($fileName) ? $post->image = $fileName: '';
             $post->save();
-            return $post;
+            return response()->json([
+                'message' => "Create success",
+                'status' => 200,
+                'post' =>  $post,
+            ]);
         } catch (\Exception $e) {
-            // return $e;
-            dd($e);
+            return response()->json([
+                "message" => "Error during create",
+                'status' => 500,
+            ]);
         }
     }
 
@@ -109,7 +122,31 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(),[
+            'title' => 'required',
+            'content' => 'required',
+            'description' => 'required',
+            'image' => 'required|mimes:jpeg,jpg,png',
+        ]);
+        if($validator->fails()){
+            return response()->json([
+                'message' => [
+                    $validator->errors()->first('title'),
+                    $validator->errors()->first('content'),
+                    $validator->errors()->first('description'),
+                    $validator->errors()->first('image'),
+                ],
+                'status' => 400
+            ]);
+        }
         try {
+            $title = Post::where('title', $request->title)->first();
+            if ( !empty($title)) {
+                return response()->json([
+                    'message' => "Name exists",
+                    'status' => 401
+                ]);
+            }
             if($request->get('image'))
             {
                 $image = $request->get('image');
@@ -121,7 +158,7 @@ class PostController extends Controller
             $post->slug         = str_slug($request->title);
             $post->content      = $request->content;
             $post->description  = $request->description;
-            $post->image        = $name;
+            isset($name) ? $post->image = $name: '';
             $post->save();
             return $post;
         } catch (\Exception $e) {

@@ -9,14 +9,16 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 import VueRouter from 'vue-router';
+import Vue from 'vue';
+import VeeValidate from 'vee-validate';
 
 window.Vue.use(VueRouter);
-
-import Vue from 'vue';
 
 import PostIndex from './components/posts/PostIndex.vue';
 import PostCreate from './components/posts/PostCreate.vue';
 import PostEdit from './components/posts/PostEdit.vue';
+
+Vue.use(VeeValidate);
 
 const routes =  [
     {

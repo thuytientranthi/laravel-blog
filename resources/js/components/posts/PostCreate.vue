@@ -9,32 +9,44 @@
             <div class="panel-body">
                 <form enctype="multipart/form-data" v-on:submit="saveForm()">
                     <div class="row">
+                        <p v-if="errorsValidate.length" class="text-danger">
+                            <b>Please correct the following error(s):</b>
+                            <ul>
+                                <li v-for="(error, index) in errorsValidate" :key="index">{{ error }}</li>
+                            </ul>
+                        </p>
+                    </div>
+                    <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">Title</label>
-                            <input type="text" v-model="post.title" class="form-control">
+                            <input type="text" v-model="post.title" v-validate="'required'" name="title" class="form-control">
+                            <span class="text-danger" v-if="errors.has('title')" >{{errors.first('title')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">content</label>
-                            <input type="text" v-model="post.content" class="form-control">
+                            <input type="text" v-model="post.content" v-validate="'required'" name="content" class="form-control">
+                            <span class="text-danger" v-if="errors.has('content')">{{ errors.first('content')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <label class="control-label">description</label>
-                            <input type="text" v-model="post.description" class="form-control">
+                            <input type="text" v-model="post.description" v-validate="'required'" name="description" class="form-control">
+                            <span class="text-danger" v-if="errors.first('description')">{{errors.first('description')}}</span>
                         </div>
                     </div>
                     <div class="row">
                         <!-- <ImageUpload></ImageUpload> -->
-                        <div class="col-md-3" v-if="post.image">
-                            <img :src="image" class="img-responsive" height="70" width="90">
+                        <div class="col-xs-12 form-group">
+                            <div class="col-md-3" v-if="post.image">
+                                <img :src="image" class="img-responsive" height="70" width="90">
+                            </div>
+                            <input type="file" v-validate="'required|image|size:100'" v-on:change="onImageChange" class="form-control" name="image" style="height: 30px;">
+                            <span class="text-danger" v-if="errors.first('image')">{{errors.first('image')}}</span>
                         </div>
-                        <div class="col-md-12">
-                            <input type="file" v-on:change="onImageChange" class="form-control">
-                        </div>
-                    </div>
+                    </div><br>
                     <div class="row">
                         <div class="col-xs-12 form-group">
                             <button class="btn btn-success">Create</button>
@@ -47,11 +59,15 @@
 </template>
 
 <script>
-    import ImageUpload from '../files/Imageupload.vue'
+    // import ImageUpload from '../files/Imageupload.vue';
+    import Vue from 'vue';
+    import VeeValidate from 'vee-validate';
+    Vue.use(VeeValidate);
     export default {
         // components :{ImageUpload :ImageUpload},
          data() {
             return {
+                errorsValidate: [],
                 post: {
                     title: '',
                     content: '',
@@ -67,6 +83,7 @@
                     return;
                 this.createImage(files[0]);
             },
+
             createImage(file) {
                 let reader = new FileReader();
                 let vm = this;
@@ -75,13 +92,28 @@
                 };
                 reader.readAsDataURL(file);
             },
-            // uploadImage(){
-            //     axios.post('/image/store',{image: this.image}).then(response => {
-            //        console.log(response);
-            //     });
-            // }
+
             saveForm() {
+                // check validate
+                // if (this.title && this.content && this.description && this.image) {
+                //     return true;
+                // }
+                // this.errors = [];
+                // if (!this.title) {
+                //     this.errors.push('Title required.');
+                // }
+                // if (!this.content) {
+                //     this.errors.push('Content required.');
+                // }
+                // if (!this.description) {
+                //     this.errors.push('Decription required.');
+                // }
+                // if (!this.image) {
+                //     this.errors.push('Image required.');
+                // }
+
                 event.preventDefault();
+                this.$validator.validateAll();
                 var app = this;
                 var newPost = app.post;
                 newPost.image = this.image;
@@ -92,13 +124,28 @@
                         'Content-Type': 'multipart/form-data'
                     }
                 })
-                .then(function (resp) {
-                    app.$router.push({path: '/'});   
-                })
-                .catch(function (error) {
-                    if (error.response.status == 400){
-                        this.validationErrors = error.response.data.errors;
+                .then( (resp) => {
+                    // console.log(this.errorsValidate); 
+                    this.errorsValidate =[];
+                    if (resp.data.status === 400){
+                        console.log(app.errorsValidate);
+                        resp.data.message.forEach(element => {
+                            app.errorsValidate.push(element);
+                        });
                     }
+                    if (resp.data.status === 401){
+                        app.errorsValidate.push(resp.data.message);
+                    }
+                    if (resp.data.status === 500){
+                        var message = 'cannot create';
+                        app.errorsValidate.push(message);
+                    }
+                    if (resp.data.status === 200){
+                        console.log(newPost);
+                        app.$router.push({path: '/'});
+                    }
+                })
+                .catch((error) => {
                     console.log(error);
                     alert("Could not create your post");
                 });
